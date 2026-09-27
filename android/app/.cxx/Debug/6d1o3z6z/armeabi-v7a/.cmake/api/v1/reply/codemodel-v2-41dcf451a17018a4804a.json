@@ -1,0 +1,69 @@
+{
+	"configurations" : 
+	[
+		{
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"jsonFile" : "directory-.-Debug-d0094a50bb2071803777.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.6.0"
+					},
+					"projectIndex" : 0,
+					"source" : ".",
+					"targetIndexes" : 
+					[
+						0,
+						1
+					]
+				}
+			],
+			"name" : "Debug",
+			"projects" : 
+			[
+				{
+					"directoryIndexes" : 
+					[
+						0
+					],
+					"name" : "mu_android_bootstrap",
+					"targetIndexes" : 
+					[
+						0,
+						1
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 0,
+					"id" : "mu_android_bootstrap::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-mu_android_bootstrap-Debug-11701d7b516bcbf750bb.json",
+					"name" : "mu_android_bootstrap",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "mu_android_legacy_login_ui_probe::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-mu_android_legacy_login_ui_probe-Debug-b18b5957465583b9a418.json",
+					"name" : "mu_android_legacy_login_ui_probe",
+					"projectIndex" : 0
+				}
+			]
+		}
+	],
+	"kind" : "codemodel",
+	"paths" : 
+	{
+		"build" : "D:/Proyecto Android/MuOnline/android/app/.cxx/Debug/6d1o3z6z/armeabi-v7a",
+		"source" : "D:/Proyecto Android/MuOnline/android/app/src/main/cpp"
+	},
+	"version" : 
+	{
+		"major" : 2,
+		"minor" : 3
+	}
+}

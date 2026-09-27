@@ -1,0 +1,251 @@
+[1mdiff --git a/android/app/src/main/cpp/android_bootstrap.cpp b/android/app/src/main/cpp/android_bootstrap.cpp[m
+[1mindex 42cf6bb..a60acc3 100644[m
+[1m--- a/android/app/src/main/cpp/android_bootstrap.cpp[m
+[1m+++ b/android/app/src/main/cpp/android_bootstrap.cpp[m
+[36m@@ -273,9 +273,11 @@[m [mnamespace[m
+ 		int preview_game_logged_status;[m
+ 		unsigned int preview_game_logged_attempt;[m
+ 		std::string preview_game_logged_message;[m
+[31m-		float phase;[m
+[31m-		bool original_game_initialized;[m
+[31m-	};[m
+[32m+[m			[32mfloat phase;[m
+[32m+[m			[32mbool loading_intro_active;[m
+[32m+[m			[32mfloat loading_intro_elapsed;[m
+[32m+[m			[32mbool original_game_initialized;[m
+[32m+[m		[32m};[m
+ [m
+ 	bool CollectPreviewCharacterEntries([m
+ 		const BootstrapState* state,[m
+[36m@@ -423,12 +425,12 @@[m [mnamespace[m
+ 		return PointInsideRect(x, render_y, rect.x, rect.y, rect.width, rect.height);[m
+ 	}[m
+ [m
+[31m-	PreviewHitTarget HitTestPreviewTarget(const BootstrapState* state, float window_x, float window_y)[m
+[31m-	{[m
+[31m-		if (state == NULL || !state->has_interface_preview)[m
+[32m+[m		[32mPreviewHitTarget HitTestPreviewTarget(const BootstrapState* state, float window_x, float window_y)[m
+ 		{[m
+[31m-			return PreviewHitTarget_None;[m
+[31m-		}[m
+[32m+[m			[32mif (state == NULL || !state->has_interface_preview || state->loading_intro_active)[m
+[32m+[m			[32m{[m
+[32m+[m				[32mreturn PreviewHitTarget_None;[m
+[32m+[m			[32m}[m
+ [m
+ 		const float render_y = ConvertWindowYToRenderY(state, window_y);[m
+ 		if (PointInsidePreviewRect(window_x, render_y, state->preview_login_button_rect))[m
+[36m@@ -4307,7 +4309,7 @@[m [mnamespace[m
+ [m
+ 		if (!show_character_stage && state->interface_title_glow_texture.loaded)[m
+ 		{[m
+[31m-			const float glow_width_virtual = 204.8f;[m
+[32m+[m				[32mconst float glow_width_virtual = 280.0f;[m
+ 			const float glow_height_virtual =[m
+ 				glow_width_virtual * (static_cast<float>(state->interface_title_glow_texture.height) / static_cast<float>(state->interface_title_glow_texture.width));[m
+ 			const float logo_alpha = std::min(1.0f, state->phase * 0.35f);[m
+[36m@@ -4325,7 +4327,7 @@[m [mnamespace[m
+ [m
+ 		if (!show_character_stage && state->interface_title_texture.loaded)[m
+ 		{[m
+[31m-			const float title_width_virtual = 204.8f;[m
+[32m+[m				[32mconst float title_width_virtual = 280.0f;[m
+ 			const float title_height_virtual =[m
+ 				title_width_virtual * (static_cast<float>(state->interface_title_texture.height) / static_cast<float>(state->interface_title_texture.width));[m
+ 			const float title_alpha = std::min(1.0f, state->phase * 0.45f);[m
+[36m@@ -4346,10 +4348,10 @@[m [mnamespace[m
+ 				(has_legacy_server_browser && !legacy_server_browser.group_buttons.empty())[m
+ 					? &legacy_server_browser.group_buttons[0][m
+ 					: NULL;[m
+[31m-			const float button_x_virtual = 266.0f;[m
+[31m-			const float button_top_virtual = 190.0f;[m
+[31m-			const float button_width_virtual = 108.0f;[m
+[31m-			const float button_height_virtual = 26.0f;[m
+[32m+[m				[32mconst float button_x_virtual = 210.0f;[m
+[32m+[m				[32mconst float button_top_virtual = 245.0f;[m
+[32m+[m				[32mconst float button_width_virtual = 220.0f;[m
+[32m+[m				[32mconst float button_height_virtual = 42.0f;[m
+ 			const bool button_hot =[m
+ 				state->touch_active &&[m
+ 				state->preview_pressed_target == PreviewHitTarget_ButtonLogin &&[m
+[36m@@ -4416,10 +4418,14 @@[m [mnamespace[m
+ 					3,[m
+ 					0.98f);[m
+ 			}[m
+[31m-			const std::string button_label =[m
+[31m-				(legacy_select_button != NULL && !legacy_select_button->label.empty())[m
+[31m-					? legacy_select_button->label[m
+[31m-					: GetPreviewPrimaryButtonLabel(state);[m
+[32m+[m				[32mconst std::string loaded_button_label =[m
+[32m+[m					[32m(legacy_select_button != NULL && !legacy_select_button->label.empty())[m
+[32m+[m						[32m? legacy_select_button->label[m
+[32m+[m						[32m: GetPreviewPrimaryButtonLabel(state);[m
+[32m+[m				[32mconst std::string button_label =[m
+[32m+[m					[32m(loaded_button_label == "TEST" || loaded_button_label == "Test")[m
+[32m+[m						[32m? "SELECCIONAR SERVIDOR"[m
+[32m+[m						[32m: loaded_button_label;[m
+ 			const float button_pixel = std::max(1.0f, 2.0f * scene_scale);[m
+ 			const float button_text_width = MeasureBootstrapTextWidth(button_label, button_pixel);[m
+ 			DrawBootstrapTextShadowed([m
+[36m@@ -6309,8 +6315,8 @@[m [mlog_preview_action:[m
+ 		return true;[m
+ 	}[m
+ [m
+[31m-	void RenderOriginalGameFrame(BootstrapState* state)[m
+[31m-	{[m
+[32m+[m		[32mvoid RenderOriginalGameFrame(BootstrapState* state)[m
+[32m+[m		[32m{[m
+ 		// Sync touch/mouse input to legacy engine globals[m
+ 		platform::SyncLegacyClientMouseState(&state->game_mouse_state);[m
+ [m
+[36m@@ -6331,12 +6337,132 @@[m [mlog_preview_action:[m
+ 		}[m
+ [m
+ 		// Advance one-shot mouse events (push/pop/doubleclick)[m
+[31m-		platform::AdvanceLegacyClientMouseState(&state->game_mouse_state);[m
+[31m-	}[m
+[32m+[m			[32mplatform::AdvanceLegacyClientMouseState(&state->game_mouse_state);[m
+[32m+[m		[32m}[m
+ [m
+[31m-	void RenderBootstrapFrame(BootstrapState* state)[m
+[31m-	{[m
+[31m-		PollPreviewConnectServer(state);[m
+[32m+[m		[32mvoid DrawLoadingIntro(BootstrapState* state)[m
+[32m+[m		[32m{[m
+[32m+[m			[32mif (state == NULL || !state->egl_window.IsReady())[m
+[32m+[m			[32m{[m
+[32m+[m				[32mreturn;[m
+[32m+[m			[32m}[m
+[32m+[m
+[32m+[m			[32mconst int width = state->egl_window.GetWidth();[m
+[32m+[m			[32mconst int height = state->egl_window.GetHeight();[m
+[32m+[m			[32mif (width <= 0 || height <= 0)[m
+[32m+[m			[32m{[m
+[32m+[m				[32mreturn;[m
+[32m+[m			[32m}[m
+[32m+[m
+[32m+[m			[32mplatform::RenderBackend& render_backend = platform::GetRenderBackend();[m
+[32m+[m			[32mrender_backend.PushOrthoScene(width, height);[m
+[32m+[m			[32mrender_backend.SetDepthTestEnabled(false);[m
+[32m+[m			[32mrender_backend.SetCullFaceEnabled(false);[m
+[32m+[m			[32mrender_backend.SetTextureEnabled(true);[m
+[32m+[m			[32mrender_backend.SetAlphaTestEnabled(false);[m
+[32m+[m			[32mrender_backend.SetBlendState(true, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);[m
+[32m+[m			[32mrender_backend.SetCurrentColor(1.0f, 1.0f, 1.0f, 1.0f);[m
+[32m+[m
+[32m+[m			[32mDrawFilledRect(render_backend, 0.0f, 0.0f,[m
+[32m+[m				[32mstatic_cast<float>(width), static_cast<float>(height),[m
+[32m+[m				[32m0.015f, 0.020f, 0.035f, 1.0f);[m
+[32m+[m
+[32m+[m			[32mconst PreviewRect scene_rect = GetLegacyPreviewSceneRect(width, height);[m
+[32m+[m			[32mif (state->interface_background_uses_legacy_login || state->interface_uses_object95_scene)[m
+[32m+[m			[32m{[m
+[32m+[m				[32mif (state->interface_scene_cloud_texture.loaded)[m
+[32m+[m				[32m{[m
+[32m+[m					[32mDrawTexturedQuadCoverRect(render_backend, state->interface_scene_cloud_texture, scene_rect, 0.42f);[m
+[32m+[m				[32m}[m
+[32m+[m			[32m}[m
+[32m+[m			[32melse[m
+[32m+[m			[32m{[m
+[32m+[m				[32mDrawCombinedBackgroundRect(render_backend,[m
+[32m+[m					[32mstate->interface_background_left_texture,[m
+[32m+[m					[32mstate->interface_background_right_texture,[m
+[32m+[m					[32mscene_rect, 0.42f);[m
+[32m+[m			[32m}[m
+[32m+[m
+[32m+[m			[32mconst float intro_time = state->loading_intro_elapsed;[m
+[32m+[m			[32mconst float fade_in = std::min(1.0f, intro_time / 0.45f);[m
+[32m+[m			[32mconst float pulse = 0.78f + 0.16f * sinf(state->phase * 2.0f);[m
+[32m+[m			[32mif (state->interface_title_glow_texture.loaded)[m
+[32m+[m			[32m{[m
+[32m+[m				[32mconst float glow_width = 270.0f;[m
+[32m+[m				[32mconst float glow_height = glow_width * static_cast<float>(state->interface_title_glow_texture.height) /[m
+[32m+[m					[32mstatic_cast<float>(state->interface_title_glow_texture.width);[m
+[32m+[m				[32mDrawTexturedQuad(render_backend, state->interface_title_glow_texture,[m
+[32m+[m					[32mMapLegacyPreviewX(scene_rect, (GetLegacyPreviewRectVirtualWidth(scene_rect) - glow_width) * 0.5f),[m
+[32m+[m					[32mMapLegacyPreviewY(scene_rect, 105.0f, glow_height),[m
+[32m+[m					[32mMapLegacyPreviewWidth(scene_rect, glow_width),[m
+[32m+[m					[32mMapLegacyPreviewHeight(scene_rect, glow_height),[m
+[32m+[m					[32mpulse * fade_in);[m
+[32m+[m			[32m}[m
+[32m+[m			[32mif (state->interface_title_texture.loaded)[m
+[32m+[m			[32m{[m
+[32m+[m				[32mconst float title_width = 270.0f;[m
+[32m+[m				[32mconst float title_height = title_width * static_cast<float>(state->interface_title_texture.height) /[m
+[32m+[m					[32mstatic_cast<float>(state->interface_title_texture.width);[m
+[32m+[m				[32mDrawTexturedQuad(render_backend, state->interface_title_texture,[m
+[32m+[m					[32mMapLegacyPreviewX(scene_rect, (GetLegacyPreviewRectVirtualWidth(scene_rect) - title_width) * 0.5f),[m
+[32m+[m					[32mMapLegacyPreviewY(scene_rect, 105.0f, title_height),[m
+[32m+[m					[32mMapLegacyPreviewWidth(scene_rect, title_width),[m
+[32m+[m					[32mMapLegacyPreviewHeight(scene_rect, title_height),[m
+[32m+[m					[32mfade_in);[m
+[32m+[m			[32m}[m
+[32m+[m
+[32m+[m			[32mconst float progress = std::min(1.0f,[m
+[32m+[m				[32m(state->has_game_data ? 0.16f : 0.04f) +[m
+[32m+[m				[32m(state->has_core_bootstrap ? 0.16f : 0.0f) +[m
+[32m+[m				[32m(state->has_language_assets ? 0.14f : 0.0f) +[m
+[32m+[m				[32m(state->has_global_text_bootstrap ? 0.14f : 0.0f) +[m
+[32m+[m				[32m(state->has_server_list_script ? 0.14f : 0.0f) +[m
+[32m+[m				[32m(state->has_packet_crypto_bootstrap ? 0.12f : 0.0f) +[m
+[32m+[m				[32m(state->has_interface_preview ? 0.14f : 0.0f));[m
+[32m+[m			[32mconst float bar_width = MapLegacyPreviewWidth(scene_rect, 360.0f);[m
+[32m+[m			[32mconst float bar_height = MapLegacyPreviewHeight(scene_rect, 8.0f);[m
+[32m+[m			[32mconst float bar_x = scene_rect.x + (scene_rect.width - bar_width) * 0.5f;[m
+[32m+[m			[32mconst float bar_y = MapLegacyPreviewY(scene_rect, 395.0f, 8.0f);[m
+[32m+[m			[32mDrawFilledRect(render_backend, bar_x, bar_y, bar_width, bar_height, 0.03f, 0.04f, 0.06f, 0.92f);[m
+[32m+[m			[32mDrawFilledRect(render_backend, bar_x, bar_y, bar_width * progress, bar_height, 0.78f, 0.62f, 0.24f, 0.96f);[m
+[32m+[m
+[32m+[m			[32mconst char* status = progress < 0.30f ? "Preparando recursos" :[m
+[32m+[m				[32m(progress < 0.70f ? "Cargando interfaz" : "Preparando servidor");[m
+[32m+[m			[32mconst float text_pixel = std::max(1.0f, 2.0f * (scene_rect.height / GetLegacyPreviewRectVirtualHeight(scene_rect)));[m
+[32m+[m			[32mDrawBootstrapTextShadowed(render_backend, status,[m
+[32m+[m				[32mscene_rect.x + (scene_rect.width - MeasureBootstrapTextWidth(status, text_pixel)) * 0.5f,[m
+[32m+[m				[32mMapLegacyPreviewY(scene_rect, 370.0f, 0.0f), text_pixel,[m
+[32m+[m				[32m0.92f, 0.86f, 0.68f, fade_in);[m
+[32m+[m
+[32m+[m		[32m}[m
+[32m+[m
+[32m+[m		[32mvoid RenderBootstrapFrame(BootstrapState* state)[m
+[32m+[m		[32m{[m
+[32m+[m			[32mif (state->loading_intro_active)[m
+[32m+[m			[32m{[m
+[32m+[m				[32mstate->loading_intro_elapsed += 1.0f / 60.0f;[m
+[32m+[m				[32mconst bool resources_ready = state->has_interface_preview &&[m
+[32m+[m					[32mstate->has_server_list_script &&[m
+[32m+[m					[32mstate->has_packet_crypto_bootstrap;[m
+[32m+[m				[32mif (resources_ready && state->loading_intro_elapsed >= 1.8f)[m
+[32m+[m				[32m{[m
+[32m+[m					[32mstate->loading_intro_active = false;[m
+[32m+[m					[32mLogInfo("Loading intro finished; showing login/server selection");[m
+[32m+[m				[32m}[m
+[32m+[m				[32melse[m
+[32m+[m				[32m{[m
+[32m+[m					[32mstate->phase += 0.01f;[m
+[32m+[m					[32mplatform::RenderBackend& render_backend = platform::GetRenderBackend();[m
+[32m+[m					[32mrender_backend.SetViewport(0, 0, state->egl_window.GetWidth(), state->egl_window.GetHeight(), state->egl_window.GetHeight());[m
+[32m+[m					[32mrender_backend.SetClearColor(0.015f, 0.020f, 0.035f, 1.0f);[m
+[32m+[m					[32mrender_backend.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);[m
+[32m+[m					[32mDrawLoadingIntro(state);[m
+[32m+[m					[32mrender_backend.PresentCurrentFrame();[m
+[32m+[m					[32mreturn;[m
+[32m+[m				[32m}[m
+[32m+[m			[32m}[m
+[32m+[m
+[32m+[m			[32mPollPreviewConnectServer(state);[m
+ 		PollPreviewGameServer(state);[m
+ 		const bool preview_character_stage = IsPreviewCharacterStage(state);[m
+ 		platform::SetLegacyClientSceneFlag(preview_character_stage ? CHARACTER_SCENE : LOG_IN_SCENE);[m
+[36m@@ -6601,8 +6727,10 @@[m [mvoid android_main(struct android_app* app)[m
+ 	platform::SyncLegacyClientMouseState(&state.game_mouse_state);[m
+ 	platform::InitializeConnectServerBootstrapState(&state.connect_server_bootstrap);[m
+ 	platform::InitializeGameServerBootstrapState(&state.game_server_bootstrap);[m
+[31m-	state.phase = 0.0f;[m
+[31m-	state.original_game_initialized = false;[m
+[32m+[m		[32mstate.phase = 0.0f;[m
+[32m+[m		[32mstate.loading_intro_active = true;[m
+[32m+[m		[32mstate.loading_intro_elapsed = 0.0f;[m
+[32m+[m		[32mstate.original_game_initialized = false;[m
+ [m
+ 	app->userData = &state;[m
+ 	app->onAppCmd = HandleCommand;[m

@@ -1,0 +1,4 @@
+D:/Proyecto Android/MuOnline/android/app/.cxx/Debug/6d1o3z6z/arm64-v8a/CMakeFiles/mu_android_bootstrap.dir
+D:/Proyecto Android/MuOnline/android/app/.cxx/Debug/6d1o3z6z/arm64-v8a/CMakeFiles/mu_android_legacy_login_ui_probe.dir
+D:/Proyecto Android/MuOnline/android/app/.cxx/Debug/6d1o3z6z/arm64-v8a/CMakeFiles/edit_cache.dir
+D:/Proyecto Android/MuOnline/android/app/.cxx/Debug/6d1o3z6z/arm64-v8a/CMakeFiles/rebuild_cache.dir
